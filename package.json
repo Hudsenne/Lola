@@ -6,7 +6,11 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "dev:backend": "node server/chat-server.mjs",
+    "health:backend": "node -e \"fetch('http://127.0.0.1:' + (process.env.LOLA_BACKEND_PORT || 8787) + '/api/health').then(r => r.text()).then(t => console.log(t)).catch(err => { console.error(err); process.exit(1); })\"",
+    "analysis:mock": "node server/runMockComparison.mjs",
+    "analysis:orchestrated": "node server/runOrchestratedDemo.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
