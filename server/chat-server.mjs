@@ -9,6 +9,7 @@ const PORT = Number(process.env.LOLA_BACKEND_PORT || 8787);
 const MAX_BODY_BYTES = 16 * 1024;
 const LOBSTER_TIMEOUT_MS = 60_000;
 const DEFAULT_WORKSPACE = '/home/jm/.lobster_workspace';
+const CHAT_MODE = (process.env.LOLA_CHAT_MODE || 'mock').toLowerCase();
 
 const LOLA_SYSTEM_PROMPT = [
   'You are LOLA, a focused health and behavior-change assistant for a demo app.',
@@ -173,11 +174,50 @@ async function queryLobster(prompt) {
   throw lastError || new Error('Lobster query failed');
 }
 
+function buildMockCardText(cards = []) {
+  if (!Array.isArray(cards) || cards.length === 0) return '';
+  const lines = cards.slice(0, 2).map((card, idx) => {
+    const headline = typeof card?.headline === 'string' ? card.headline : 'Action';
+    const reasoning = typeof card?.reasoning === 'string' ? card.reasoning : '';
+    return `${idx + 1}. ${headline}${reasoning ? ` (${reasoning})` : ''}`;
+  });
+  return lines.join('\n');
+}
+
+async function queryMockResponder(message) {
+  const orchestrated = await runLolaOrchestrator({ question: message });
+  const mode = orchestrated?.surfaced_output?.mode || 'observation';
+  const payload = orchestrated?.surfaced_output?.payload || {};
+  const note = orchestrated?.degraded_mode ? 'Baseline API unavailable; using degraded mode.\n' : '';
+
+  if (mode === 'prompt_card') {
+    const cards = buildMockCardText(payload.cards);
+    return {
+      text: `${note}Suggested next actions:\n${cards || 'No prompt cards available.'}`,
+      source: 'mock-orchestrator'
+    };
+  }
+
+  if (mode === 'escalation') {
+    return {
+      text: `${note}${payload.message || 'Escalation threshold reached in mock analysis.'}`,
+      source: 'mock-orchestrator'
+    };
+  }
+
+  return {
+    text:
+      `${note}${payload.message || orchestrated?.clinical_reasoning?.natural_language_summary || 'No actionable signal in mock analysis.'}`,
+    source: 'mock-orchestrator'
+  };
+}
+
 function healthPayload() {
   return {
     ok: true,
     service: 'lola-chat-backend',
-    source: 'lobster',
+    source: CHAT_MODE === 'lobster' ? 'lobster' : 'mock-orchestrator',
+    chat_mode: CHAT_MODE,
     scope: 'health',
     host: HOST,
     port: PORT,
@@ -255,7 +295,16 @@ const server = http.createServer(async (req, res) => {
     // Policy prompt + Lobster execution live only on this local backend so the UI never
     // receives OpenClaw workspace/system prompt material that direct gateway chat exposed.
     const prompt = buildPrompt(message);
-    const result = await queryLobster(prompt);
+    let result;
+    if (CHAT_MODE === 'lobster') {
+      try {
+        result = await queryLobster(prompt);
+      } catch {
+        result = await queryMockResponder(message);
+      }
+    } else {
+      result = await queryMockResponder(message);
+    }
     sendJson(res, 200, {
       message: result.text,
       source: result.source,
