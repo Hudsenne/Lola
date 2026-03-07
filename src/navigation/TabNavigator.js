@@ -12,7 +12,7 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, size }) => {
+        tabBarIcon: ({ focused }) => {
           let iconName;
           if (route.name === 'Dashboard') {
             iconName = focused ? 'grid' : 'grid-outline';
@@ -45,9 +45,9 @@ export default function TabNavigator() {
         },
       })}
     >
-      <Tab.Screen name="Chat" component={ChatScreen} />
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Chat">{() => <ChatScreen />}</Tab.Screen>
+      <Tab.Screen name="Dashboard">{() => <DashboardScreen />}</Tab.Screen>
+      <Tab.Screen name="Profile">{() => <ProfileScreen />}</Tab.Screen>
     </Tab.Navigator>
   );
 }
