@@ -1,4 +1,5 @@
 import React from 'react';
+import { Image } from 'react-native';
 
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,25 +9,21 @@ import { colors } from '../theme/colors';
 
 // --- Timeline ---
 function Timeline() {
-  const points = [105.0,101.2,97.8,92.7,94.1,96.3,97.8,95.5,98.1,96.8,97.2,96.2];
-  const min = 90, max = 107, range = max - min;
+  const charts = [
+    { file: require('../../assets/lola_weight_kg.png'), label: 'Weight · Personal Baseline & Drift Detection' },
+    { file: require('../../assets/lola_calories.png'), label: 'Calories · Personal Baseline & Drift Detection' },
+    { file: require('../../assets/lola_steps.png'), label: 'Steps · Personal Baseline & Drift Detection' },
+    { file: require('../../assets/lola_travel_focus.png'), label: 'Travel Disruption · Weight Drift Detection' },
+  ];
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Longitudinal Timeline</Text>
-      <View style={styles.chartCard}>
-        <Text style={styles.chartLabel}>Weight · 791 days</Text>
-        <View style={styles.chartArea}>
-          {points.map((w, i) => (
-            <View key={i} style={styles.barCol}>
-              <View style={[styles.bar, { height: `${((w - min) / range) * 100}%`, backgroundColor: w < 94 ? '#10B981' : w > 98 ? '#EF4444' : '#7C3AED' }]} />
-            </View>
-          ))}
+      <Text style={styles.sectionTitle}>Longitudinal Timeline · 791 days</Text>
+      {charts.map((c, i) => (
+        <View key={i} style={styles.chartCard}>
+          <Text style={styles.chartLabel}>{c.label}</Text>
+          <Image source={c.file} style={styles.chartImage} resizeMode="contain" />
         </View>
-        <View style={styles.chartFooter}>
-          <Text style={styles.chartStat}>105kg → 92.7kg → plateau</Text>
-          <Text style={styles.chartStat}>96.2kg today</Text>
-        </View>
-      </View>
+      ))}
     </View>
   );
 }
@@ -219,7 +216,8 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: { color: colors.textMuted, fontSize: 12, marginTop: -8, marginBottom: 12 },
 
-  chartCard: { backgroundColor: colors.bgCard, borderRadius: 12, padding: 14, alignItems: 'center' },
+  chartCard: { backgroundColor: colors.bgCard, borderRadius: 12, padding: 14, marginBottom: 12 },
+  chartImage: { width: '100%', height: 200, borderRadius: 8 },
   chartLabel: { color: colors.textMuted, fontSize: 11, alignSelf: 'flex-start', marginBottom: 8 },
   chartFooter: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 8 },
   chartStat: { color: colors.textMuted, fontSize: 11 },
