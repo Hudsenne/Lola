@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image } from 'react-native';
 
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -9,21 +9,34 @@ import { colors } from '../theme/colors';
 
 // --- Timeline ---
 function Timeline() {
+  const [selected, setSelected] = React.useState(null);
   const charts = [
-    { file: require('../../assets/lola_weight_kg.png'), label: 'Weight · Personal Baseline & Drift Detection' },
-    { file: require('../../assets/lola_calories.png'), label: 'Calories · Personal Baseline & Drift Detection' },
-    { file: require('../../assets/lola_steps.png'), label: 'Steps · Personal Baseline & Drift Detection' },
-    { file: require('../../assets/lola_travel_focus.png'), label: 'Travel Disruption · Weight Drift Detection' },
+    { file: require('../../assets/lola_weight_kg.png'), label: 'Weight · Baseline & Drift Detection' },
+    { file: require('../../assets/lola_calories.png'), label: 'Calories · Baseline & Drift Detection' },
+    { file: require('../../assets/lola_steps.png'), label: 'Steps · Baseline & Drift Detection' },
+    { file: require('../../assets/lola_travel_focus.png'), label: 'Travel Disruption · Weight Drift' },
   ];
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Longitudinal Timeline · 791 days</Text>
       {charts.map((c, i) => (
-        <View key={i} style={styles.chartCard}>
+        <TouchableOpacity key={i} style={styles.chartCard} onPress={() => setSelected(c)} activeOpacity={0.8}>
           <Text style={styles.chartLabel}>{c.label}</Text>
           <Image source={c.file} style={styles.chartImage} resizeMode="contain" />
-        </View>
+          <Text style={styles.chartTap}>Tap to expand</Text>
+        </TouchableOpacity>
       ))}
+      {selected && (
+        <Modal visible={true} transparent={true} animationType="fade" onRequestClose={() => setSelected(null)}>
+          <TouchableOpacity style={styles.modalOverlay} onPress={() => setSelected(null)} activeOpacity={1}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalLabel}>{selected.label}</Text>
+              <Image source={selected.file} style={styles.modalImage} resizeMode="contain" />
+              <Text style={styles.modalClose}>Tap anywhere to close</Text>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -218,6 +231,12 @@ const styles = StyleSheet.create({
 
   chartCard: { backgroundColor: colors.bgCard, borderRadius: 12, padding: 14, marginBottom: 12 },
   chartImage: { width: '100%', height: 200, borderRadius: 8 },
+  chartTap: { color: '#4B5563', fontSize: 10, textAlign: 'right', marginTop: 4 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center' },
+  modalContainer: { width: '95%', alignItems: 'center' },
+  modalLabel: { color: '#9CA3AF', fontSize: 12, marginBottom: 12 },
+  modalImage: { width: '100%', height: 300, borderRadius: 8 },
+  modalClose: { color: '#4B5563', fontSize: 11, marginTop: 12 },
   chartLabel: { color: colors.textMuted, fontSize: 11, alignSelf: 'flex-start', marginBottom: 8 },
   chartFooter: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 8 },
   chartStat: { color: colors.textMuted, fontSize: 11 },
