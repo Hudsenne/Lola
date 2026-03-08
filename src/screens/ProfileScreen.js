@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
+
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,52 +8,20 @@ import { colors } from '../theme/colors';
 
 // --- Timeline ---
 function Timeline() {
-  const data = [
-    { day: 0, weight: 105.0, label: 'Start' },
-    { day: 30, weight: 101.2 },
-    { day: 60, weight: 97.8 },
-    { day: 90, weight: 92.7, label: 'Low' },
-    { day: 150, weight: 94.1 },
-    { day: 210, weight: 96.3 },
-    { day: 300, weight: 97.8 },
-    { day: 400, weight: 95.5 },
-    { day: 500, weight: 98.1 },
-    { day: 600, weight: 96.8 },
-    { day: 700, weight: 97.2 },
-    { day: 791, weight: 96.2, label: 'Today' },
-  ];
-
-  const W = 320, H = 120, pad = 20;
-  const minW = 90, maxW = 107;
-  const minD = 0, maxD = 791;
-
-  const x = (d) => pad + ((d - minD) / (maxD - minD)) * (W - pad * 2);
-  const y = (w) => pad + ((maxW - w) / (maxW - minW)) * (H - pad * 2);
-
-  const pathD = data.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(p.day)} ${y(p.weight)}`).join(' ');
-  const areaD = pathD + ` L ${x(791)} ${H} L ${x(0)} ${H} Z`;
-
+  const points = [105.0,101.2,97.8,92.7,94.1,96.3,97.8,95.5,98.1,96.8,97.2,96.2];
+  const min = 90, max = 107, range = max - min;
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Longitudinal Timeline</Text>
       <View style={styles.chartCard}>
         <Text style={styles.chartLabel}>Weight · 791 days</Text>
-        <Svg width={W} height={H}>
-          <Defs>
-            <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#7C3AED" stopOpacity="0.3" />
-              <Stop offset="1" stopColor="#7C3AED" stopOpacity="0" />
-            </LinearGradient>
-          </Defs>
-          <Path d={areaD} fill="url(#grad)" />
-          <Path d={pathD} stroke="#7C3AED" strokeWidth="2" fill="none" />
-          {data.filter(p => p.label).map((p, i) => (
-            <React.Fragment key={i}>
-              <Circle cx={x(p.day)} cy={y(p.weight)} r="4" fill="#7C3AED" />
-              <SvgText x={x(p.day)} y={y(p.weight) - 8} fill="#9CA3AF" fontSize="9" textAnchor="middle">{p.label}</SvgText>
-            </React.Fragment>
+        <View style={styles.chartArea}>
+          {points.map((w, i) => (
+            <View key={i} style={styles.barCol}>
+              <View style={[styles.bar, { height: `${((w - min) / range) * 100}%`, backgroundColor: w < 94 ? '#10B981' : w > 98 ? '#EF4444' : '#7C3AED' }]} />
+            </View>
           ))}
-        </Svg>
+        </View>
         <View style={styles.chartFooter}>
           <Text style={styles.chartStat}>105kg → 92.7kg → plateau</Text>
           <Text style={styles.chartStat}>96.2kg today</Text>
